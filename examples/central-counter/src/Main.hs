@@ -61,11 +61,11 @@ putCounter action = do
   r <- liftIO . flip atomicModifyIORef' (doAction action) =<< view counter
 
   subscriber' <- view subscriber
-  let link :: Proxy ("counter" :>  Get '[JSON] Int)
-      link = Proxy
-  liftIO . atomically $ notify subscriber' ModifyEvent link id
+
+  liftIO . atomically $ notify subscriber' ModifyEvent link linkURI
   return r
   where
+    link = Proxy :: Proxy ("counter" :> Get '[JSON] Int)
     doAction (CounterAdd val) c = (c+val, c+val)
     doAction (CounterSet val) _ = (val, val)
 
@@ -75,19 +75,16 @@ counterHandlers = getCounter :<|> putCounter
 -- | We use servant's `enter` mechanism for handling Authentication ...
 --   We throw an error if no secret was provided or if it was invalid - so our
 --   handlers don't have to care about it.
-toServant' :: CounterData -> Maybe AuthToken -> ReaderT CounterData Handler a -> Handler a
-toServant' cVar (Just (VerySecret "topsecret")) m = runReaderT m cVar
-toServant' _ (Just (VerySecret secret)) _ = throwError $ err401 { errBody = "Your secret is valid not! - '" <> (B.fromStrict . T.encodeUtf8) secret <> "'!"  }
-toServant' _ _ _ = throwError $ err401 { errBody = "You have to provide a valid secret, which is topsecret!" }
-
-toServant :: CounterData -> Maybe AuthToken -> ReaderT CounterData Handler :~> Handler
-toServant cVar secret = Nat $ toServant' cVar secret
+toServant :: CounterData -> Maybe AuthToken -> ReaderT CounterData Handler a -> Handler a
+toServant cVar (Just (VerySecret "topsecret")) m = runReaderT m cVar
+toServant _ (Just (VerySecret secret)) _ = throwError $ err401 { errBody = "Your secret is valid not! - '" <> (B.fromStrict . T.encodeUtf8) secret <> "'!"  }
+toServant _ _ _ = throwError $ err401 { errBody = "You have to provide a valid secret, which is topsecret!" }
 
 counterServer :: CounterData -> Maybe AuthToken -> Server CounterAPI
-counterServer cVar secret = enter (toServant cVar secret) counterHandlers
+counterServer cVar secret = hoistServer (Proxy :: Proxy CounterAPI) (toServant cVar secret) counterHandlers
 
 fullServer :: CounterData -> Server FullAPI
-fullServer cVar = counterServer cVar :<|> serveDirectory "frontend/dist/"
+fullServer cVar = counterServer cVar :<|> serveDirectoryFileServer "frontend/dist/"
 
 main :: IO ()
 main = do

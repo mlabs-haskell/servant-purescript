@@ -64,7 +64,6 @@ executable central-counter
                      , aeson
                      , bytestring
                      , containers
-                     , ghc-mod
                      , http-api-data
                      , http-types
                      , lens
@@ -103,7 +102,6 @@ executable psGenerator
                      , aeson
                      , containers
                      , filepath
-                     , ghc-mod
                      , http-api-data
                      , http-types
                      , lens

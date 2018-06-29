@@ -29,14 +29,14 @@ import           Servant.Subscriber.Subscribable
 import           Web.HttpApiData
 
 
-data Hello = Hello {
+newtype Hello = Hello {
   _message :: Text
 } deriving Generic
 
 instance FromJSON Hello
 instance ToJSON Hello
 
-data AuthToken = VerySecret Text deriving (Generic, Show, Eq, Ord, Read)
+newtype AuthToken = VerySecret Text deriving (Generic, Show, Eq, Ord, Read)
 
 instance FromJSON AuthToken
 
