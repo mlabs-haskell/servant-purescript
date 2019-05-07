@@ -73,7 +73,6 @@ executable central-counter
                      , mtl
                      , purescript-bridge
                      , servant
-                     , servant-options
                      , servant-server
                      , servant-purescript
                      , stm
