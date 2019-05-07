@@ -7,18 +7,14 @@ import Control.Monad.Except.Trans
 import Control.Monad.Reader.Trans
 import Counter.ServerTypes
 import Counter.WebAPI
--- import Data.Argonaut.Generic.Aeson
 import Data.Either
--- import Data.Generic
 import Data.Generic.Rep.Show (genericShow)
 import Data.Maybe
 import Prelude
 import Servant.PureScript.Ajax
 import Servant.PureScript.Settings
--- import Counter.WebAPI.MakeRequests as MakeReq
 import Data.Array as Array
 import Control.Bind ((<=<))
--- import DOM.Node.Node (baseURI)
 import Data.Argonaut.Core (Json)
 import Data.Argonaut.Parser (jsonParser)
 import Data.Bifunctor (lmap)
@@ -32,9 +28,6 @@ import Pux.DOM.Events (onClick)
 import Pux.Renderer.React (renderToDOM)
 import Text.Smolder.HTML (button, span, div, p)
 import Text.Smolder.Markup ((#!), text)
--- import Signal (Signal)
--- import Signal.Channel (Channel, subscribe, send, channel, CHANNEL)
-
 
 data Action = Increment
             | Decrement
@@ -85,32 +78,6 @@ runEffect settings m = do
     case er of
       Left err -> pure $ Just $ ReportError err
       Right v -> pure $ Just v
-
--- type SubscriberData = {
---   subscriber :: Subscriber Action
--- , messages :: Signal Action
--- }
-
--- initSubscriber :: forall eff. MySettings -> SubscriberEff (channel :: CHANNEL | eff) (SubscriberData (channel :: CHANNEL | eff))
--- initSubscriber settings = do
---   ch <- channel Nop
---   let
---     c :: Config (channel :: CHANNEL | eff) Action
---     c = {
---         url : "ws://localhost:8081/subscriber"
---       , notify : send ch <<< SubscriberLog <<< gShow
---       , callback : send ch
---       }
---   sub <- makeSubscriber c
---   let sig = subscribe ch
---   pongReq <- flip runReaderT settings $ MakeReq.putCounter (CounterAdd 1) -- | Let's play a bit! :-)
---   closeReq <- flip runReaderT settings $ MakeReq.putCounter (CounterSet 100)
---   subs <- flip runReaderT settings $ Sub.getCounter (maybe Nop Update)
---   let c = Subscriber.getConnection sub
---   C.setPongRequest pongReq c -- |< Hihi :-)
---   C.setCloseRequest closeReq c
---   Subscriber.deploy subs sub
---   pure $ { subscriber : sub, messages : sig }
 
 main :: Effect Unit
 main = do
