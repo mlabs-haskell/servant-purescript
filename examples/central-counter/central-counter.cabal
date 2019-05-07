@@ -64,6 +64,7 @@ executable central-counter
                      , aeson
                      , bytestring
                      , containers
+                     , directory
                      , http-api-data
                      , http-types
                      , lens
@@ -72,9 +73,9 @@ executable central-counter
                      , mtl
                      , purescript-bridge
                      , servant
+                     , servant-options
                      , servant-server
                      , servant-purescript
-                     , servant-subscriber
                      , stm
                      , text
                      , transformers
@@ -110,7 +111,6 @@ executable psGenerator
                      , servant
                      , servant-foreign
                      , servant-purescript
-                     , servant-subscriber
                      , text
 
   -- Directories containing source files.

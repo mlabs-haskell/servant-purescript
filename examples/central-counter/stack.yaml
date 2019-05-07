@@ -2,13 +2,21 @@
 # For more information, see: http://docs.haskellstack.org/en/stable/yaml_configuration/
 
 # Specifies the GHC version and set of packages available (e.g., lts-3.5, nightly-2015-09-21, ghc-7.10.2)
-resolver: lts-11.15
+resolver: lts-13.15
 
 # Local packages, usually specified by relative directory name
 packages:
 - '.'
+- '../../'
+- location:
+    git: https://github.com/eskimor/purescript-bridge.git
+    commit: cb00f5e746a05d06eb32001e4579af64c29d567b
+  extra-dep: true
+
 # Packages to be pulled from upstream that are not in the resolver (e.g., acme-missiles-0.3)
-extra-deps: []
+extra-deps:
+- servant-subscriber-0.6.0.2
+- servant-options-0.1.0.0@sha256:39f50166a68006250e79370372f553ca476f14d06d93fa0c401050253aeba803
 
 # Override default flag values for local packages and extra-deps
 flags: {}

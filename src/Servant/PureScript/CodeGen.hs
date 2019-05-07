@@ -56,7 +56,7 @@ getReaderParams opts allParams = let
 
 genParamSettings :: [PSParam]-> Doc
 genParamSettings rParams = let
-    genEntry arg = arg ^. pName ^. to psVar <+> "::" <+> arg ^. pType ^. typeName ^. to strictText
+    genEntry arg = arg ^. (pName . to psVar) <+> "::" <+> arg ^. (pType . typeName . to strictText)
     genEntries   = docIntercalate (line <> ", ") . map genEntry
   in
     "newtype SPParams_ = SPParams_" <+/> align (
@@ -88,7 +88,7 @@ genGetReaderParams = stack . map (genGetReaderParam . psVar . _pName)
 
 
 genSignature :: Text -> [PSType] -> Maybe PSType -> Doc
-genSignature = genSignatureBuilder $ "forall eff m." <+/> "MonadAsk (SPSettings_ SPParams_) m => MonadError AjaxError m => MonadAff ( ajax :: AJAX | eff) m" <+/> "=>"
+genSignature = genSignatureBuilder $ "forall m." <+/> "MonadAsk (SPSettings_ SPParams_) m => MonadError AjaxError m => MonadAff m" <+/> "=>"
 
 genSignatureBuilder :: Doc -> Text -> [PSType] -> Maybe PSType -> Doc
 genSignatureBuilder constraint fnName params mRet = fName <+> "::" <+> align (constraint <+/> parameterString)
@@ -112,27 +112,24 @@ genFnBody rParams req = "do"
       </> "let spOpts_ = case spOpts_' of SPSettings_ o -> o"
       </> "let spParams_ = case spOpts_.params of SPParams_ ps_ -> ps_"
       </> genGetReaderParams rParams
-      </> hang 6 ("let httpMethod =" <+> dquotes (req ^. reqMethod ^. to T.decodeUtf8 ^. to strictText))
+      </> hang 6 ("let httpMethod = fromString " <+> dquotes (req ^. reqMethod ^. to T.decodeUtf8 ^. to strictText))
       </> genBuildQueryArgs (req ^. reqUrl ^. queryStr)
       </> hang 6 ("let reqUrl ="     <+> genBuildURL (req ^. reqUrl))
       </> "let reqHeaders =" </> indent 6 (req ^. reqHeaders ^. to genBuildHeaders)
       </> case req ^. reqBody of
              Nothing -> ""
-             Just _ -> "let encodeJson = case spOpts_.encodeJson of SPSettingsEncodeJson_ e -> e"
+             Just _ -> "let encodeOptions = case spOpts_.encodeJson of SPSettingsEncodeJson_ e -> e"
       </> "let affReq =" <+> hang 2 ( "defaultRequest" </>
             "{ method ="  <+> "httpMethod"
         </> ", url ="     <+> "reqUrl"
         </> ", headers =" <+> "defaultRequest.headers <> reqHeaders"
         </> case req ^. reqBody of
               Nothing -> "}"
-              Just _  -> ", content =" <+> "toNullable <<< Just <<< stringify <<< encodeJson $ reqBody" </> "}"
+              Just _  -> ", content =" <+> "Just <<< string <<< genericEncodeJSON encodeOptions $ reqBody" </> "}"
       )
       </> if shallParseBody (req^.reqReturnType)
-          then "affResp <- affjax affReq"
-           </> "let decodeJson = case spOpts_.decodeJson of SPSettingsDecodeJson_ d -> d"
-           </> "getResult affReq decodeJson affResp"
-          else "_ <- affjax affReq"
-           </> "pure unit"
+          then "r <- ajax spOpts_' affReq" </> "pure r.body"
+          else "void $ ajax spOpts_' affReq"
     ) <> line
   where
     shallParseBody Nothing = False
@@ -176,10 +173,8 @@ genBuildHeader (HeaderArg arg) = let
     argText = arg ^. argName ^. to unPathSegment
     encodedArgName = strictText . textURLEncode True $ argText
   in
-    align $ "{ field : " <> dquotes encodedArgName
-      <+/> comma <+> "value :"
-      <+> "encodeHeader spOpts_'" <+> psVar argText
-      </> "}"
+    align $ "RequestHeader " <> dquotes encodedArgName
+      <+> parens ("encodeHeader spOpts_'" <+> psVar argText)
 genBuildHeader (ReplaceHeaderArg _ _) = error "ReplaceHeaderArg - not yet implemented!"
 
 reqsToImportLines :: [Req PSType] -> ImportLines
@@ -218,10 +213,10 @@ queryArgToParam arg = Param {
       Normal -> mkPsMaybe (arg ^. queryArgName ^. argType)
       _ -> arg ^. queryArgName ^. argType
 
-headerArgToParam :: HeaderArg f -> Param f
+headerArgToParam :: HeaderArg PSType -> Param PSType
 headerArgToParam (HeaderArg arg) = Param {
     _pName = arg ^. argName ^. to unPathSegment
-  , _pType = arg ^. argType
+  , _pType = arg ^. (argType . typeParameters . to head)
   }
 headerArgToParam _ = error "We do not support ReplaceHeaderArg - as I have no idea what this is all about."
 
