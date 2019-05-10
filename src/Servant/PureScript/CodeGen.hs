@@ -127,13 +127,9 @@ genFnBody rParams req = "do"
               Nothing -> "}"
               Just _  -> ", content =" <+> "Just <<< string <<< genericEncodeJSON encodeOptions $ reqBody" </> "}"
       )
-      </> if shallParseBody (req^.reqReturnType)
-          then "r <- ajax spOpts_' affReq" </> "pure r.body"
-          else "void $ ajax spOpts_' affReq"
+      </> "r <- ajax spOpts_' affReq"
+      </> "pure r.body"
     ) <> line
-  where
-    shallParseBody Nothing = False
-    shallParseBody (Just t) = t^.typeName /= "Unit"
 
 genBuildURL :: Url PSType -> Doc
 genBuildURL url = psVar baseURLId <+> "<>"
