@@ -157,7 +157,7 @@ genBuildQueryArg arg = case arg ^. queryArgType of
   where
     argText = arg ^. queryArgName ^. argName ^. to unPathSegment
     encodedArgName = strictText . textURLEncode True $ argText
-    genQueryEncoding fn op = fn <+> dquotes encodedArgName <+> op <+> psVar argText
+    genQueryEncoding fn operator = fn <+> dquotes encodedArgName <+> operator <+> psVar argText
 
 -----------
 
@@ -201,11 +201,11 @@ mkPsMaybe t = TypeInfo "" "" "Maybe" [t]
 
 queryArgToParam :: QueryArg PSType -> Param PSType
 queryArgToParam arg = Param {
-    _pType = pType
+    _pType = paramType
   , _pName = arg ^. queryArgName ^. argName ^. to unPathSegment
   }
   where
-    pType = case arg ^. queryArgType of
+    paramType = case arg ^. queryArgType of
       Normal -> mkPsMaybe (arg ^. queryArgName ^. argType)
       _ -> arg ^. queryArgName ^. argType
 
@@ -214,7 +214,7 @@ headerArgToParam (HeaderArg arg) = Param {
     _pName = arg ^. argName ^. to unPathSegment
   , _pType = arg ^. (argType . typeParameters . to head)
   }
-headerArgToParam _ = error "We do not support ReplaceHeaderArg - as I have no idea what this is all about."
+headerArgToParam (ReplaceHeaderArg _ _) = error "We do not support ReplaceHeaderArg - as I have no idea what this is all about."
 
 reqBodyToParam :: Maybe f -> Maybe (Param f)
 reqBodyToParam = fmap (Param "reqBody")
