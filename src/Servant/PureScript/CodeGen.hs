@@ -64,6 +64,8 @@ genParamSettings rParams = let
           <+> genEntries rParams
           </> rbrace
           )
+    </>
+    "derive instance newtypeSPParams_ :: Newtype SPParams_ _"
 
 genFunction :: [PSParam] -> Req PSType -> Doc
 genFunction allRParams req = let
@@ -108,17 +110,15 @@ genFnHead fnName params = fName <+> align (docIntercalate softline docParams <+>
 genFnBody :: [PSParam] -> Req PSType -> Doc
 genFnBody rParams req = "do"
     </> indent 2 (
-          "spOpts_' <- ask"
-      </> "let spOpts_ = case spOpts_' of SPSettings_ o -> o"
-      </> "let spParams_ = case spOpts_.params of SPParams_ ps_ -> ps_"
+          "settings <- ask"
+      </> "let spParams_ = view (_params <<< _Newtype) settings"
+      </> "let encodeOptions = view _encodeJson settings"
+      </> "let decodeOptions = view _decodeJson settings"
       </> genGetReaderParams rParams
-      </> hang 6 ("let httpMethod = fromString " <+> dquotes (req ^. reqMethod ^. to T.decodeUtf8 ^. to strictText))
+      </> hang 6 ("let httpMethod = fromString" <+> dquotes (req ^. reqMethod ^. to T.decodeUtf8 ^. to strictText))
       </> genBuildQueryArgs (req ^. reqUrl ^. queryStr)
       </> hang 6 ("let reqUrl ="     <+> genBuildURL (req ^. reqUrl))
       </> "let reqHeaders =" </> indent 6 (req ^. reqHeaders ^. to genBuildHeaders)
-      </> case req ^. reqBody of
-             Nothing -> ""
-             Just _ -> "let encodeOptions = case spOpts_.encodeJson of SPSettingsEncodeJson_ e -> e"
       </> "let affReq =" <+> hang 2 ( "defaultRequest" </>
             "{ method ="  <+> "httpMethod"
         </> ", url ="     <+> "reqUrl"
@@ -127,7 +127,7 @@ genFnBody rParams req = "do"
               Nothing -> "}"
               Just _  -> ", content =" <+> "Just <<< string <<< genericEncodeJSON encodeOptions $ reqBody" </> "}"
       )
-      </> "r <- ajax spOpts_' affReq"
+      </> "r <- ajax decode affReq"
       </> "pure r.body"
     ) <> line
 
@@ -141,7 +141,7 @@ genBuildPath = docIntercalate (softline <> "<> \"/\" <> ") . map (genBuildSegmen
 
 genBuildSegment :: SegmentType PSType -> Doc
 genBuildSegment (Static (PathSegment seg)) = dquotes $ strictText (textURLEncode False seg)
-genBuildSegment (Cap arg) = "encodeURLPiece spOpts_'" <+> arg ^. argName ^. to unPathSegment ^. to psVar
+genBuildSegment (Cap arg) = "encodeURLPiece settings" <+> arg ^. argName ^. to unPathSegment ^. to psVar
 
 genBuildQueryArgs :: [QueryArg PSType] -> Doc
 genBuildQueryArgs [] = "let queryString = \"\""

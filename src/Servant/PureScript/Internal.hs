@@ -4,10 +4,10 @@
 {-# LANGUAGE FlexibleInstances     #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE OverloadedStrings     #-}
+{-# LANGUAGE RankNTypes            #-}
 {-# LANGUAGE ScopedTypeVariables   #-}
 {-# LANGUAGE TemplateHaskell       #-}
 {-# LANGUAGE TypeOperators         #-}
-
 
 module Servant.PureScript.Internal where
 
@@ -15,7 +15,6 @@ import           Control.Lens
 
 import           Data.Bifunctor
 import           Data.Char
-import           Data.Monoid
 import           Data.Proxy
 import           Data.Set                           (Set)
 import qualified Data.Set                           as Set
@@ -26,10 +25,8 @@ import           Data.Typeable
 import           Language.PureScript.Bridge
 import           Language.PureScript.Bridge.PSTypes
 
-
 import           Servant.Foreign
 import           Servant.Foreign.Internal
-
 
 -- | Our language type is Paramized, so you can choose a custom 'TypeBridge' for your translation, by
 --   providing your own data type and implementing 'HasBridge' for it.
@@ -82,8 +79,9 @@ data Settings = Settings {
   --   If your API uses a given parameter name multiple times with different types,
   --   only the ones matching the type of the first occurrence
   --   will be put in the Reader monad, all others will still be passed as function parameter.
-, _readerParams          :: Set ParamName
-, _standardImports       :: ImportLines
+    , _readerParams          :: Set ParamName
+    , _standardImports       :: ImportLines
+    , _customSerialisation   :: (forall a. a -> Bool)
   -- | If you want codegen for servant-subscriber, set this to True. See the central-counter example
   --   for a simple usage case.
 , _generateSubscriberAPI :: Bool
@@ -103,16 +101,21 @@ defaultSettings = Settings {
         , ImportLine "Control.Monad.Reader.Class" (Set.fromList [ "class MonadAsk", "ask" ])
         , ImportLine "Data.Array" (Set.fromList ["catMaybes", "null"])
         , ImportLine "Data.HTTP.Method" (Set.fromList ["fromString"])
+        , ImportLine "Data.Lens" (Set.fromList [ "to", "use", "view" ])
+        , ImportLine "Data.Lens.Iso.Newtype" (Set.fromList ["_Newtype"])
         , ImportLine "Data.Maybe" (Set.fromList [ "Maybe(..)"])
+        , ImportLine "Data.Newtype" (Set.fromList [ "class Newtype" ])
         , ImportLine "Data.Nullable" (Set.fromList [ "toNullable" ])
         , ImportLine "Data.String" (Set.fromList ["joinWith"])
         , ImportLine "Effect.Aff.Class" (Set.fromList [ "class MonadAff" ])
-        , ImportLine "Foreign.Generic" (Set.fromList [ "genericEncodeJSON" ])
+        , ImportLine "Foreign.Class" (Set.fromList [ "decode"])
+        , ImportLine "Foreign.Generic" (Set.fromList [ "genericDecode", "genericEncodeJSON" ])
         , ImportLine "Prim" (Set.fromList [ "String" ]) -- For baseURL!
         , ImportLine "Servant.PureScript.Ajax" (Set.fromList [ "AjaxError", "ajax" ])
-        , ImportLine "Servant.PureScript.Settings" (Set.fromList [ "SPSettings_(..)", "SPSettingsEncodeJson_(..)", "gDefaultToURLPiece" ])
+        , ImportLine "Servant.PureScript.Settings" (Set.fromList [ "SPSettings_(..)", "SPSettingsEncodeJson_(..)", "gDefaultToURLPiece", "_decodeJson", "_encodeJson", "_params" ])
         , ImportLine "Servant.PureScript.Util" (Set.fromList [ "encodeListQuery", "encodeURLPiece", "encodeQueryItem", "encodeHeader" ])
         ]
+  , _customSerialisation   = const False
   , _generateSubscriberAPI = False
   }
 
