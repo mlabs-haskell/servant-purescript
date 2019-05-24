@@ -108,8 +108,8 @@ defaultSettings = Settings {
         , ImportLine "Data.Nullable" (Set.fromList [ "toNullable" ])
         , ImportLine "Data.String" (Set.fromList ["joinWith"])
         , ImportLine "Effect.Aff.Class" (Set.fromList [ "class MonadAff" ])
-        , ImportLine "Foreign.Class" (Set.fromList [ "decode"])
-        , ImportLine "Foreign.Generic" (Set.fromList [ "genericDecode", "genericEncodeJSON" ])
+        , ImportLine "Foreign.Class" (Set.fromList [ "decode", "encode" ])
+        , ImportLine "Foreign.Generic" (Set.fromList [ "encodeJSON", "genericDecode", "genericEncodeJSON" ])
         , ImportLine "Prim" (Set.fromList [ "String" ]) -- For baseURL!
         , ImportLine "Servant.PureScript.Ajax" (Set.fromList [ "AjaxError", "ajax" ])
         , ImportLine "Servant.PureScript.Settings" (Set.fromList [ "SPSettings_(..)", "SPSettingsEncodeJson_(..)", "gDefaultToURLPiece", "_decodeJson", "_encodeJson", "_params" ])

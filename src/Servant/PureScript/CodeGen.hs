@@ -125,7 +125,7 @@ genFnBody rParams req = "do"
         </> ", headers =" <+> "defaultRequest.headers <> reqHeaders"
         </> case req ^. reqBody of
               Nothing -> "}"
-              Just _  -> ", content =" <+> "Just <<< string <<< genericEncodeJSON encodeOptions $ reqBody" </> "}"
+              Just _  -> ", content =" <+> "Just $ string $ encodeJSON reqBody" </> "}"
       )
       </> "r <- ajax decode affReq"
       </> "pure r.body"
