@@ -110,10 +110,10 @@ genFnHead fnName params = fName <+> align (docIntercalate softline docParams <+>
 genFnBody :: [PSParam] -> Req PSType -> Doc
 genFnBody rParams req = "do"
     </> indent 2 (
-          "settings <- ask"
-      </> "let spParams_ = view (_params <<< _Newtype) settings"
-      </> "let encodeOptions = view _encodeJson settings"
-      </> "let decodeOptions = view _decodeJson settings"
+          "spOpts_' <- ask"
+      </> "let spParams_ = view (_params <<< _Newtype) spOpts_'"
+      </> "let encodeOptions = view _encodeJson spOpts_'"
+      </> "let decodeOptions = view _decodeJson spOpts_'"
       </> genGetReaderParams rParams
       </> hang 6 ("let httpMethod = fromString" <+> dquotes (req ^. reqMethod ^. to T.decodeUtf8 ^. to strictText))
       </> genBuildQueryArgs (req ^. reqUrl ^. queryStr)
@@ -141,7 +141,7 @@ genBuildPath = docIntercalate (softline <> "<> \"/\" <> ") . map (genBuildSegmen
 
 genBuildSegment :: SegmentType PSType -> Doc
 genBuildSegment (Static (PathSegment seg)) = dquotes $ strictText (textURLEncode False seg)
-genBuildSegment (Cap arg) = "encodeURLPiece settings" <+> arg ^. argName ^. to unPathSegment ^. to psVar
+genBuildSegment (Cap arg) = "encodeURLPiece spOpts_'" <+> arg ^. argName ^. to unPathSegment ^. to psVar
 
 genBuildQueryArgs :: [QueryArg PSType] -> Doc
 genBuildQueryArgs [] = "let queryString = \"\""
