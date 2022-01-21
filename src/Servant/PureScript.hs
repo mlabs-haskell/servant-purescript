@@ -100,21 +100,19 @@ generateWithSettings opts@Settings {..} root pBr pAPI = do
   where
     bridge = languageBridge pBr
     interceptType = interceptHeader . interceptQueryParam . interceptPathSegment
-    interceptHeader sumType
-      | Set.member (sumType ^. sumTypeInfo . to bridge) headerTypes = toHeader sumType
-      | otherwise = sumType
-    interceptQueryParam sumType
-      | Set.member (sumType ^. sumTypeInfo . to bridge) queryTypes = toQueryValue sumType
-      | otherwise = sumType
-    interceptPathSegment sumType
-      | Set.member (sumType ^. sumTypeInfo . to bridge) pathTypes = toPathSegment sumType
-      | otherwise = sumType
-
+    interceptHeader = interceptor headerTypes toHeader
+    interceptQueryParam = interceptor queryTypes toQueryValue
+    interceptPathSegment = interceptor pathTypes toPathSegment
     apiList = apiToList pAPI pBr
     flatArgTypes = argType . to flattenTypeInfo . traversed
-    headerTypes = Set.fromList $ apiList ^.. traversed . reqHeaders . traversed . headerArg . flatArgTypes
-    queryTypes = Set.fromList $ apiList ^.. traversed . reqUrl . queryStr . traversed . queryArgName . flatArgTypes
-    pathTypes = Set.fromList $ apiList ^.. traversed . reqUrl . path . traversed . to unSegment . _Cap . flatArgTypes
+    headerTypes = apiTypesOf $ reqHeaders . traversed . headerArg . flatArgTypes
+    queryTypes = apiTypesOf $ reqUrl . queryStr . traversed . queryArgName . flatArgTypes
+    pathTypes = apiTypesOf $ reqUrl . path . traversed . to unSegment . _Cap . flatArgTypes
+    apiTypesOf l = Set.fromList $ apiList ^.. traversed . l
+
+    interceptor include f sumType
+      | Set.member (sumType ^. sumTypeInfo . to bridge) include = f sumType
+      | otherwise = sumType
 
     writeModule :: Text -> IO ()
     writeModule mName =
