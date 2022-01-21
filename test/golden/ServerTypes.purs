@@ -4,7 +4,7 @@ module ServerTypes where
 import Prelude
 
 import Control.Lazy (defer)
-import Data.Argonaut (encodeJson)
+import Data.Argonaut (encodeJson, jsonNull)
 import Data.Argonaut.Decode (class DecodeJson)
 import Data.Argonaut.Decode.Aeson ((</$\>), (</*\>), (</\>))
 import Data.Argonaut.Encode (class EncodeJson)
