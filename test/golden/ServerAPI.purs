@@ -23,16 +23,18 @@ import Data.Argonaut.Decode.Aeson as D
 import Data.Argonaut.Encode.Aeson as E
 import Data.String.NonEmpty as NES
 
+data Api = Api
+
 getHello ::
   forall e m.
-  MonadAjax JsonDecodeError Json e m =>
+  MonadAjax Api JsonDecodeError Json e m =>
   Either (Tuple Int String) Hello ->
   Boolean ->
   Maybe String ->
   Array Hello ->
   ExceptT e m Hello
 getHello reqBody myFlag myParam myParams =
-  request req
+  request Api req
   where
   req = { method, uri, headers, content, encode, decode }
   method = Left GET
@@ -56,11 +58,11 @@ getHello reqBody myFlag myParam myParams =
 
 getHelloByName ::
   forall e m.
-  MonadAjax JsonDecodeError Json e m =>
+  MonadAjax Api JsonDecodeError Json e m =>
   String ->
   ExceptT e m (Maybe Hello)
 getHelloByName name =
-  request req
+  request Api req
   where
   req = { method, uri, headers, content, encode, decode }
   method = Left GET
@@ -81,11 +83,11 @@ getHelloByName name =
 
 getTestHeader ::
   forall e m.
-  MonadAjax JsonDecodeError Json e m =>
+  MonadAjax Api JsonDecodeError Json e m =>
   Maybe TestHeader ->
   ExceptT e m TestHeader
 getTestHeader localHeader =
-  request req
+  request Api req
   where
   req = { method, uri, headers, content, encode, decode }
   method = Left GET
@@ -105,10 +107,10 @@ getTestHeader localHeader =
 
 getBy ::
   forall e m.
-  MonadAjax JsonDecodeError Json e m =>
+  MonadAjax Api JsonDecodeError Json e m =>
   ExceptT e m Int
 getBy =
-  request req
+  request Api req
   where
   req = { method, uri, headers, content, encode, decode }
   method = Left GET

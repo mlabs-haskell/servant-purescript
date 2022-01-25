@@ -18,7 +18,7 @@ let additions =
           , "uri"
           ]
         , repo = "https://github.com/input-output-hk/purescript-servant-support"
-        , version = "1fcf4e93723f7f5d36476735b76888938ced871e"
+        , version = "f154e72c85ec6b9118506830779142a8623aa694"
         }
       , json-helpers =
         { dependencies =

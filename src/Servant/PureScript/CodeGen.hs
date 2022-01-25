@@ -36,6 +36,7 @@ genModule settings@Settings{..} reqs =
    in docIntercalate
         (line <> line)
         [ genModuleHeader _apiModuleName imports,
+          strictText "data Api = Api",
           docIntercalate
             (line <> line)
             (map (genFunction settings) reqs)
@@ -89,7 +90,7 @@ genFunction settings req =
         <> map (unPathSegment . _argName) args
         <> map (unPathSegment . _argName . _queryArgName) queryString
       constraints =
-        [ mkPsType "MonadAjax" [psJsonDecodeError, psJson, mkPsType "e" [], mkPsType "m" []] ]
+        [ mkPsType "MonadAjax" [psApi, psJsonDecodeError, psJson, mkPsType "e" [], mkPsType "m" []] ]
       signature = genSignature fnName ["e", "m"] constraints pTypes returnType
       fbody = hang 2
         $ genFnHead fnName pNames </> genFnBody method headers body pathSegments queryString returnType
@@ -126,7 +127,7 @@ genFnHead fnName params = fName <+> align (docIntercalate softline docParams <+>
 
 genFnBody :: Method -> [Arg PSType] -> Maybe PSType -> [Segment PSType] -> [QueryArg PSType] -> Maybe PSType -> Doc
 genFnBody method headers body args queryString returnType = docIntercalate line $ hang 2 <$>
-  [ strictText "request req"
+  [ strictText "request Api req"
   , strictText "where"
   , strictText "req = { method, uri, headers, content, encode, decode }"
   , strictText "method = Left" <+> methodDoc
@@ -220,3 +221,6 @@ textURLEncode spaceIsPlus = T.decodeUtf8 . urlEncode spaceIsPlus . T.encodeUtf8
 -- | Little helper for generating valid variable names
 psVar :: Text -> Doc
 psVar = strictText . toPSVarName
+
+psApi :: PSType
+psApi = mkPsType "Api" []
