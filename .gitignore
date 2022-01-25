@@ -22,3 +22,5 @@ stack.yaml
 .spago/
 /test/output/output
 .psc-ide-port
+.direnv
+.envrc
