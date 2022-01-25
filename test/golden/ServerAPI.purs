@@ -4,7 +4,6 @@ module ServerAPI where
 import Prelude
 
 import Affjax.RequestHeader (RequestHeader(..))
-import Control.Monad.Except (ExceptT)
 import Data.Argonaut (Json, JsonDecodeError)
 import Data.Argonaut.Decode.Aeson ((</$\>), (</*\>), (</\>))
 import Data.Argonaut.Encode.Aeson ((>$<), (>/\<))
@@ -13,26 +12,23 @@ import Data.Either (Either(..))
 import Data.Foldable (fold)
 import Data.HTTP.Method (Method(..))
 import Data.Maybe (Maybe(..))
-import Data.Tuple (Tuple(..))
-import Servant.PureScript (class MonadAjax, flagQueryPairs, paramListQueryPairs, paramQueryPairs, request, toHeader, toPathSegment)
+import Data.Tuple (Tuple)
+import Servant.PureScript (AjaxError, class MonadAjax, flagQueryPairs, paramListQueryPairs, paramQueryPairs, request, toHeader, toPathSegment)
 import ServerTypes (Hello, TestHeader)
-import URI (PathAbsolute(..), RelativePart(..), RelativeRef(..))
-import URI.Path.Segment (segmentNZFromString)
-import Affjax.RequestBody (json) as Request
+import URI (RelativePart(..), RelativeRef(..))
 import Data.Argonaut.Decode.Aeson as D
 import Data.Argonaut.Encode.Aeson as E
-import Data.String.NonEmpty as NES
 
 data Api = Api
 
 getHello ::
-  forall e m.
-  MonadAjax Api JsonDecodeError Json e m =>
+  forall m.
+  MonadAjax Api m =>
   Either (Tuple Int String) Hello ->
   Boolean ->
   Maybe String ->
   Array Hello ->
-  ExceptT e m Hello
+  m (Either (AjaxError JsonDecodeError Json) Hello)
 getHello reqBody myFlag myParam myParams =
   request Api req
   where
@@ -57,10 +53,10 @@ getHello reqBody myFlag myParam myParams =
     ]
 
 getHelloByName ::
-  forall e m.
-  MonadAjax Api JsonDecodeError Json e m =>
+  forall m.
+  MonadAjax Api m =>
   String ->
-  ExceptT e m (Maybe Hello)
+  m (Either (AjaxError JsonDecodeError Json) (Maybe Hello))
 getHelloByName name =
   request Api req
   where
@@ -82,10 +78,10 @@ getHelloByName name =
   query = Nothing
 
 getTestHeader ::
-  forall e m.
-  MonadAjax Api JsonDecodeError Json e m =>
+  forall m.
+  MonadAjax Api m =>
   Maybe TestHeader ->
-  ExceptT e m TestHeader
+  m (Either (AjaxError JsonDecodeError Json) TestHeader)
 getTestHeader localHeader =
   request Api req
   where
@@ -106,9 +102,9 @@ getTestHeader localHeader =
   query = Nothing
 
 getBy ::
-  forall e m.
-  MonadAjax Api JsonDecodeError Json e m =>
-  ExceptT e m Int
+  forall m.
+  MonadAjax Api m =>
+  m (Either (AjaxError JsonDecodeError Json) Int)
 getBy =
   request Api req
   where

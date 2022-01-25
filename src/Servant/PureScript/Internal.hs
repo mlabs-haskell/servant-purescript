@@ -91,7 +91,6 @@ defaultSettings =
       _standardImports =
         importsFromList
           [ ImportLine "Affjax.RequestHeader" (Set.fromList ["RequestHeader(..)"]),
-            ImportLine "Control.Monad.Except" (Set.fromList ["ExceptT"]),
             ImportLine "Data.Argonaut" (Set.fromList ["Json", "JsonDecodeError"]),
             ImportLine "Data.Argonaut.Decode.Aeson" $ Set.fromList ["(</$\\>)", "(</*\\>)", "(</\\>)"],
             ImportLine "Data.Argonaut.Encode.Aeson" $ Set.fromList ["(>$<)", "(>/\\<)"],
@@ -100,10 +99,9 @@ defaultSettings =
             ImportLine "Data.Foldable" (Set.fromList ["fold"]),
             ImportLine "Data.HTTP.Method" (Set.fromList ["Method(..)"]),
             ImportLine "Data.Maybe" (Set.fromList ["Maybe(..)"]),
-            ImportLine "Data.Tuple" (Set.fromList ["Tuple(..)"]),
-            ImportLine "Servant.PureScript" (Set.fromList ["class MonadAjax", "flagQueryPairs", "paramListQueryPairs", "paramQueryPairs", "request", "toHeader", "toPathSegment"]),
-            ImportLine "URI" (Set.fromList ["PathAbsolute(..)", "RelativePart(..)", "RelativeRef(..)"]),
-            ImportLine "URI.Path.Segment" (Set.fromList ["segmentNZFromString"])
+            ImportLine "Data.Tuple" (Set.fromList ["Tuple"]),
+            ImportLine "Servant.PureScript" (Set.fromList ["AjaxError", "class MonadAjax", "flagQueryPairs", "paramListQueryPairs", "paramQueryPairs", "request", "toHeader", "toPathSegment"]),
+            ImportLine "URI" (Set.fromList ["RelativePart(..)", "RelativeRef(..)"])
           ]
     }
 

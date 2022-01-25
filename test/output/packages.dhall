@@ -10,15 +10,19 @@ let additions =
           , "arrays"
           , "bifunctors"
           , "either"
+          , "http-methods"
+          , "maybe"
           , "newtype"
+          , "nonempty"
           , "prelude"
           , "psci-support"
           , "strings"
           , "transformers"
+          , "tuples"
           , "uri"
           ]
         , repo = "https://github.com/input-output-hk/purescript-servant-support"
-        , version = "f154e72c85ec6b9118506830779142a8623aa694"
+        , version = "010bc7b3ea8e2707a00c23fd510201aabd4eb13f"
         }
       , json-helpers =
         { dependencies =

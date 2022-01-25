@@ -53,10 +53,8 @@ genModuleHeader moduleName imports =
         </> "module" <+> strictText moduleName <+> "where" <> line
         </> "import Prelude" <> line
         </> docIntercalate line importLines
-        </> "import Affjax.RequestBody (json) as Request"
         </> "import Data.Argonaut.Decode.Aeson as D"
         </> "import Data.Argonaut.Encode.Aeson as E"
-        </> "import Data.String.NonEmpty as NES"
   where
     exclude m = (/= m) . importModule
 
@@ -90,8 +88,8 @@ genFunction settings req =
         <> map (unPathSegment . _argName) args
         <> map (unPathSegment . _argName . _queryArgName) queryString
       constraints =
-        [ mkPsType "MonadAjax" [psApi, psJsonDecodeError, psJson, mkPsType "e" [], mkPsType "m" []] ]
-      signature = genSignature fnName ["e", "m"] constraints pTypes returnType
+        [ mkPsType "MonadAjax" [psApi, mkPsType "m" []] ]
+      signature = genSignature fnName ["m"] constraints pTypes returnType
       fbody = hang 2
         $ genFnHead fnName pNames </> genFnBody method headers body pathSegments queryString returnType
    in signature </> fbody
@@ -116,8 +114,10 @@ genSignature fnName variables constraints params mRet =
       </> docIntercalate (" ->" <> line) (strictText . typeInfoToText <$> (params <> [retType]))
   where
     retType = mkPsType
-      "ExceptT"
-      [mkPsType "e" [], mkPsType "m" [], fromMaybe psUnit mRet]
+      "m"
+      [ mkPsType "Either"
+          [mkPsType "AjaxError" [psJsonDecodeError, psJson], fromMaybe psUnit mRet]
+      ]
 
 genFnHead :: Text -> [Text] -> Doc
 genFnHead fnName params = fName <+> align (docIntercalate softline docParams <+> "=")
