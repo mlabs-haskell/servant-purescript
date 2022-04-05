@@ -46,7 +46,36 @@ import Data.Text (Text)
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as T
 import qualified Data.Text.IO as T
-import Language.PureScript.Bridge hiding (psTypes)
+import Language.PureScript.Bridge
+import Servant.Foreign
+    ( _Cap,
+      argType,
+      headerArg,
+      path,
+      queryArgName,
+      queryStr,
+      reqHeaders,
+      reqUrl,
+      GenerateList,
+      HasForeign(Foreign),
+      Segment(unSegment) )
+      defaultBridge,
+      writePSTypesWith,
+      unlessM,
+      importsFromList,
+      sumTypeInfo,
+      flattenTypeInfo,
+      typeName,
+      CustomInstance(CustomInstance),
+      DataConstructor(DataConstructor),
+      DataConstructorArgs(Normal),
+      ImportLine(ImportLine),
+      Instance(Json, Custom, Newtype),
+      InstanceImplementation(Explicit, DeriveNewtype),
+      InstanceMember(InstanceMember),
+      SumType(..),
+      PSType,
+      TypeInfo(TypeInfo) )
 import Servant.Foreign hiding (Normal, toHeader)
 import Servant.PureScript.CodeGen
 import Servant.PureScript.Internal
