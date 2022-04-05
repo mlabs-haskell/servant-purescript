@@ -174,7 +174,7 @@ mkToURIData name (SumType t cs is) = SumType t cs $ mkInstance : is
       (guard canDeriveNewtype $> DeriveNewtype)
         <|> (guard canUseEncodeJson $> useEncodeJson)
     canDeriveNewtype = Newtype `elem` is && isn'tRecord cs
-    isn'tRecord [DataConstructor _ (Normal (ty :| []))] = ty ^. typeName . to isKnownCompatibleType
+    isn'tRecord [(_,DataConstructor _ (Normal (ty :| [])))] = ty ^. typeName . to isKnownCompatibleType
     isn'tRecord _ = False
     canUseEncodeJson = Json `elem` is
     isKnownCompatibleType "String" = True

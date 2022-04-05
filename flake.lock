@@ -294,6 +294,22 @@
         "type": "github"
       }
     },
+    "purescript-bridge": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1649187410,
+        "narHash": "sha256-LHKb6icCunxxMx2OUVsA+BxnRbjYuWuTA8xMjTO96GM=",
+        "owner": "mlabs-haskell",
+        "repo": "purescript-bridge",
+        "rev": "4958d30ac32ca5d6d830a608327833f4739708e5",
+        "type": "github"
+      },
+      "original": {
+        "owner": "mlabs-haskell",
+        "repo": "purescript-bridge",
+        "type": "github"
+      }
+    },
     "root": {
       "inputs": {
         "easy-ps": "easy-ps",
@@ -302,7 +318,8 @@
         "nixpkgs": [
           "haskellNix",
           "nixpkgs-unstable"
-        ]
+        ],
+        "purescript-bridge": "purescript-bridge"
       }
     },
     "stackage": {
